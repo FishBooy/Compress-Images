@@ -5,15 +5,26 @@ import multer from 'multer';
 
 import sharpImage from './compress/sharp';
 import zipFiles from './compress/archiver';
-import { getPathFromRoot, getReqIp } from './utils';
+import { getPathFromRoot, getReqIp, checkDir, deleteSomeSubdir } from './utils';
 
 const PORT = process.env.PORT || 8080;
 const uploadTargetPath = getPathFromRoot('uploads');
 const minifyTargetPath = getPathFromRoot('minified');
 const zipsPath = getPathFromRoot('zips');
 const zipName = 'archived';
-const upload = multer({ dest: uploadTargetPath });
 const app = express();
+
+// 配置图片的上传目录
+const storage = multer.diskStorage({
+    destination: async function(req, file, cb) {
+        // 确保uploads/IP目录已存在
+        await checkDir(uploadTargetPath);
+        const ipDir = `${uploadTargetPath}/${getReqIp(req)}`;
+        await checkDir(ipDir);
+        cb(null, ipDir);
+    },
+});
+const upload = multer({ storage });
 
 app.use(express.static(getPathFromRoot('dist')));
 
@@ -23,31 +34,21 @@ app.use(express.static(getPathFromRoot('dist')));
 // 上传并压缩保存图片
 app.post('/minify', upload.single('file'), async (req, rsp) => {
     // 对uploads中上传成功的图片重命名，和上传前保持一致
+    const userIp = getReqIp(req);
     const { file } = req;
-    const { originalname, path } = file;
-    const renamePath = `${uploadTargetPath}/${originalname}`;
+    const { originalname, path, destination } = file;
+    const renamePath = `${destination}/${originalname}`;
     await fs.rename(path, renamePath);
 
-    // 检查是否存在以当前用户IP命名的目录，没有则需要创建
-    const userIp = getReqIp(req);
-    const miniDir = getPathFromRoot(`minified/${userIp}`);
-    try {
-        await fs.access(miniDir);
-    } catch (error) {
-        // TODO: 待优化
-        // 并发请求可能导致多个请求在未创建IP目录时，同时被catch
-        // 第一个请求创建目录后，后续请求再次创建就会导致报错无法继续执行
-        // 因此需要再次catch，并按照重复创建目录的报错进行处理
-        try {
-            await fs.mkdir(miniDir);
-        } catch (err) {
-            console.log(originalname, error);
-        }
-    }
+    // 检查是否存在minified/IP目录，没有则需要创建
+    await checkDir(minifyTargetPath);
+    const miniIpPath = `${minifyTargetPath}/${userIp}`;
+    await checkDir(miniIpPath);
 
-    // 以uploads为源目录进行压缩，并保存压缩后的图片至用户IP目录下
-    const destPath = `${miniDir}/${originalname}`;
+    // 以uploads/IP为源目录进行压缩，并保存压缩后的图片至minified/IP目录下
+    const destPath = `${miniIpPath}/${originalname}`;
     const sharpResult = await sharpImage(renamePath, destPath);
+
     const { size } = sharpResult;
     if (size) {
         // 压缩且保存成功后，删除uploads中对应的源文件，并返回压缩后的尺寸信息
@@ -79,28 +80,13 @@ app.get('/download/all', (req, rsp) => {
 
 // 压缩成功后删除缓存的压缩图片
 app.post('/delete/all', async (req, rsp) => {
-    try {
-        await fs.access(minifyTargetPath);
-        const readRsp = await fs.readdir(minifyTargetPath);
-        const rmPromises = readRsp.map((fileOrDir) => fs.rmdir(`${minifyTargetPath}/${fileOrDir}`, { recursive: true }));
-        await Promise.all(rmPromises);
+    const userIp = getReqIp(req);
+    // 删除ploads/IP目录、minified/IP目录、zips/IP目录
+    const delUploadMsg = await deleteSomeSubdir(uploadTargetPath, userIp);
+    const delMiniMsg = await deleteSomeSubdir(minifyTargetPath, userIp);
+    const delZipsMsg = await deleteSomeSubdir(zipsPath, userIp);
 
-        try {
-            await fs.access(zipsPath);
-            await fs.rmdir(zipsPath, { recursive: true });
-        } catch (error) {
-            console.error(error);
-        }
-        rsp.json({
-            code: 'OK',
-            message: 'Delete all cached mini files',
-        });
-    } catch (err) {
-        rsp.json({
-            code: 'FAIL',
-            message: 'Delete failed',
-        });
-    }
+    rsp.json({ code: 'OK', delUploadMsg, delMiniMsg, delZipsMsg });
 });
 
 app.listen(PORT, async () => {
