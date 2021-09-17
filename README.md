@@ -23,6 +23,11 @@ localhost:8080
 
 ![demo](demo.png)
 
+#### unfixed bugs
+
+-   [ ] uploads、minified、zips 目录在页面载入时确保存在或未存在时创建
+-   [ ] uploads 根据 IP 创建上传目录解决多用户并发上传的问题
+
 #### To do next
 
 -   [ ] 删除 vant 引用
