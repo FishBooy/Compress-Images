@@ -1,5 +1,5 @@
 import path from 'path';
-import fs from 'fs/promises';
+import { promises as fs } from 'fs';
 
 export const sayHello = () => 'hello world';
 export const getPathFromRoot = (dir) => path.join(process.cwd(), dir);

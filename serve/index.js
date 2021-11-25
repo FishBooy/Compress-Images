@@ -1,5 +1,5 @@
 /* eslint-disable max-len */
-import fs from 'fs/promises';
+import { promises as fs } from 'fs';
 import express from 'express';
 import multer from 'multer';
 
