@@ -70,9 +70,7 @@ export const deleteDir = async (dir) => {
 export const deleteSomeSubdir = async (parentDir, subDirName) => {
     let message = '';
     try {
-        console.log(parentDir, '##73');
         await fs.access(parentDir);
-        console.log(`${parentDir}/${subDirName}`, '##74');
         message = await deleteDir(`${parentDir}/${subDirName}`);
     } catch (error) {
         message = `No ${parentDir}!`;

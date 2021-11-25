@@ -2,9 +2,6 @@ import fs from 'fs';
 import archiver from 'archiver';
 import { getReqIp } from '../utils';
 
-// if compress with archiver package
-// "archiver": "^5.3.0",
-
 export default function zipFiles(req, rsp, sourceDir, zipsDir, zipName = 'archived') {
     // 创建zip包的保存目录
     const userIp = getReqIp(req);
