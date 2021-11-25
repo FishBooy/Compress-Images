@@ -211,7 +211,7 @@ export default {
 };
 </script>
 
-<style lang="scss">
+<style lang="less">
 .container {
   width: 60vw;
   padding: 20px;

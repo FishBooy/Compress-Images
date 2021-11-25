@@ -14,7 +14,6 @@ module.exports = {
         path: path.resolve(__dirname, 'dist'),
     },
     module: {
-        // TODO: 增加babel-loader对ES6进行编译
         rules: [
             {
                 test: /\.vue$/,
@@ -44,8 +43,8 @@ module.exports = {
                 use: ['url-loader'],
             },
             {
-                test: /\.(scss|css)$/i,
-                use: [MiniCssExtractPlugin.loader, 'css-loader', 'sass-loader'],
+                test: /\.(less|css)$/i,
+                use: [MiniCssExtractPlugin.loader, 'css-loader', 'less-loader'],
             },
         ],
     },
