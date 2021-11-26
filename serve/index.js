@@ -1,5 +1,6 @@
 /* eslint-disable max-len */
 import { promises as fs } from 'fs';
+import path from 'path';
 import express from 'express';
 import multer from 'multer';
 
@@ -19,8 +20,9 @@ const storage = multer.diskStorage({
     destination: async function(req, file, cb) {
         // 确保uploads/IP目录已存在
         await checkDir(uploadTargetPath);
-        const ipDir = `${uploadTargetPath}/${getReqIp(req)}`;
-        await checkDir(ipDir);
+        // 使用path.normalize解决windows系统文件路径的反斜杠问题
+        const ipDir = path.normalize(`${uploadTargetPath}/${getReqIp(req)}`);
+        await checkDir(path.normalize(`${uploadTargetPath}/${getReqIp(req)}`));
         cb(null, ipDir);
     },
 });
@@ -36,19 +38,17 @@ app.post('/minify', upload.single('file'), async (req, rsp) => {
     // 对uploads中上传成功的图片重命名，和上传前保持一致
     const userIp = getReqIp(req);
     const { file } = req;
-    const { originalname, path, destination } = file;
-    const renamePath = `${destination}/${originalname}`;
-    await fs.rename(path, renamePath);
+    const { originalname, path: uploadedFilePath, destination } = file;
+    const renamePath = path.join(destination, originalname);
+    await fs.rename(uploadedFilePath, renamePath);
 
     // 检查是否存在minified/IP目录，没有则需要创建
     await checkDir(minifyTargetPath);
-    const miniIpPath = `${minifyTargetPath}/${userIp}`;
+    const miniIpPath = path.normalize(`${minifyTargetPath}/${userIp}`);
     await checkDir(miniIpPath);
 
     // 以uploads/IP为源目录进行压缩，并保存压缩后的图片至minified/IP目录下
-    const destPath = `${miniIpPath}/${originalname}`;
-    const sharpResult = await sharpImage(renamePath, destPath);
-
+    const sharpResult = await sharpImage(renamePath, miniIpPath, originalname);
     const { size } = sharpResult;
     if (size) {
         // 压缩且保存成功后，删除uploads中对应的源文件，并返回压缩后的尺寸信息
@@ -81,7 +81,7 @@ app.get('/download/all', (req, rsp) => {
 // 压缩成功后删除缓存的压缩图片
 app.post('/delete/all', async (req, rsp) => {
     const userIp = getReqIp(req);
-    // 删除ploads/IP目录、minified/IP目录、zips/IP目录
+    // 删除uploads/IP目录、minified/IP目录、zips/IP目录
     const delUploadMsg = await deleteSomeSubdir(uploadTargetPath, userIp);
     const delMiniMsg = await deleteSomeSubdir(minifyTargetPath, userIp);
     const delZipsMsg = await deleteSomeSubdir(zipsPath, userIp);

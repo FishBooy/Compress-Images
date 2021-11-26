@@ -19,7 +19,10 @@ export const getDate = () => {
 
     return `${nowYear}${nowMonth}${nowDay}${nowHour}${nowMinutes}`;
 };
-export const getReqIp = (request) => request.headers['x-forwarded-for'] || request.socket.remoteAddress;
+export const getReqIp = (request) => {
+    const ip = request.headers['x-forwarded-for'] || request.socket.remoteAddress;
+    return ip.match(/\d/g).join();
+};
 
 // TODO: 待优化
 // 并发请求可能导致多个请求在未创建IP目录时，同时被catch
@@ -33,9 +36,7 @@ export const checkDir = async (dir) => {
         try {
             await fs.mkdir(dir);
             return {};
-        } catch (err) {
-            // console.log(error);
-        }
+        } catch (err) {}
     }
 };
 
@@ -67,11 +68,12 @@ export const deleteDir = async (dir) => {
     return formatDirStr(message);
 };
 
-export const deleteSomeSubdir = async (parentDir, subDirName) => {
+// 删除指定父级目录下的某个子目录
+export const deleteSomeSubdir = async (parentDir, subDir) => {
     let message = '';
     try {
         await fs.access(parentDir);
-        message = await deleteDir(`${parentDir}/${subDirName}`);
+        message = await deleteDir(path.normalize(`${parentDir}/${subDir}`));
     } catch (error) {
         message = `No ${parentDir}!`;
     }
