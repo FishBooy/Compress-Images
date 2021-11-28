@@ -7,7 +7,7 @@ export default async function sharpImage(imagePath, destPath, destName) {
         const fileName = imagePath.split(path.sep).pop();
         const extention = fileName.split('.').pop();
 
-        // windows系统中，使用sharp对名称为中文的文件进行压缩时，sharp()返回报文会缺少size属性
+        // bugfix:windows系统中，使用sharp对名称为中文的文件进行压缩时，sharp()返回报文会缺少size属性
         // 因此使用encode进行转译，压缩成功后再重命名
         const tempDestName = encodeURIComponent(destName);
         const fullDestPath = path.join(destPath, tempDestName);

@@ -1,5 +1,6 @@
 import path from 'path';
 import { promises as fs } from 'fs';
+import Log from './log';
 
 export const sayHello = () => 'hello world';
 export const getPathFromRoot = (dir) => path.join(process.cwd(), dir);
@@ -21,7 +22,9 @@ export const getDate = () => {
 };
 export const getReqIp = (request) => {
     const ip = request.headers['x-forwarded-for'] || request.socket.remoteAddress;
-    return ip.match(/\d/g).join();
+    // 使用ip创建目录时，windows平台不允许"."符号存在于名称中
+    // 因此将"1.2.3.4"格式转化为"1234"
+    return ip.match(/\d/g).join('');
 };
 
 // TODO: 待优化
@@ -33,10 +36,16 @@ export const checkDir = async (dir) => {
         await fs.access(dir);
         return { exist: true };
     } catch (error) {
+        const message = `${error.path} no exists!`;
+        Log.error(`【Function】checkDir: ${message}`);
+
         try {
             await fs.mkdir(dir);
             return {};
-        } catch (err) {}
+        } catch (err) {
+            const message = `${err.path} already existed!`;
+            Log.error(`【Function】checkDir: ${message}`);
+        }
     }
 };
 
@@ -49,8 +58,8 @@ export const deleteSubdirs = async (dir) => {
         await Promise.all(rmPromises);
         message = `Delete "${dir}" sub-dirs &`;
     } catch (error) {
-        console.error(error);
-        message = `No "${dir}" dir!`;
+        message = `${error.path} no exists!`;
+        Log.error(`【Function】deleteDir: ${message}`);
     }
     return formatDirStr(message);
 };
@@ -62,8 +71,8 @@ export const deleteDir = async (dir) => {
         await fs.rmdir(dir, { recursive: true });
         message = `Delete "${dir}"!`;
     } catch (error) {
-        console.error(error);
-        message = `No "${dir}"!`;
+        message = `${error.path} no exists!`;
+        Log.error(`【Function】deleteDir: ${message}`);
     }
     return formatDirStr(message);
 };
@@ -73,9 +82,12 @@ export const deleteSomeSubdir = async (parentDir, subDir) => {
     let message = '';
     try {
         await fs.access(parentDir);
-        message = await deleteDir(path.normalize(`${parentDir}/${subDir}`));
+        const fullPath = path.normalize(`${parentDir}/${subDir}`);
+        await fs.access(fullPath);
+        message = await deleteDir(fullPath);
     } catch (error) {
-        message = `No ${parentDir}!`;
+        message = `${error.path} no exists!`;
+        Log.warn(`【Function】deleteSomeSubdir: ${message}`);
     }
     return formatDirStr(message);
 };

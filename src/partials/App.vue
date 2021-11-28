@@ -53,9 +53,9 @@
       </ul>
     </div>
 
-    <div class="total" v-if="showDownloadAll">
+    <div class="total" v-if="showDownloadAll && filesList.length > 1">
       <div>
-        共计节省<span class="total-save"
+        共压缩{{ filesList.length }}张图片，节省了<span class="total-save"
           >{{ totalSaveSize }} 👏👏 <span>{{ totalSavePercent }}!!</span></span
         >
       </div>
@@ -68,7 +68,7 @@
 export default {
   data() {
     return {
-      filesList: [],
+      filesList: [], // 当前已在本地form读取成功(准备上传压缩)的图片集合
       totalSave: null,
       showDownloadAll: false,
       totalSaveSize: null,
@@ -187,6 +187,7 @@ export default {
 
       return `${kb}KB`;
     },
+    // 检查是否所有图片都已经成功压缩
     checkAllFiles() {
       if (this.filesList.every((file) => file.path)) {
         this.showDownloadAll = true;
@@ -203,6 +204,7 @@ export default {
         this.totalSavePercent = this.getReduce(totalMiniSize, totalSize);
       }
     },
+    // 计算单张图片压缩掉的大小
     getReduce(minSize, originalSize) {
       const percentInt = (minSize / originalSize).toFixed(2) * 100;
       return `${(100 - percentInt) * -1}%`;
@@ -214,9 +216,12 @@ export default {
 <style lang="less">
 .container {
   width: 60vw;
+  height: 100vh;
   padding: 20px;
   margin: 0 auto;
   box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
 
   .van-uploader__preview {
     display: none;
@@ -230,13 +235,16 @@ export default {
     background: #eef6ff;
     border: #3087df 2px dashed;
     border-radius: 5px;
-    margin-bottom: 20px;
+    margin-bottom: 15px;
     h1 {
       color: #62666b;
       font-size: 22px;
     }
   }
   .list {
+    flex-grow: 0;
+    flex-shrink: 1;
+    overflow: scroll;
     li {
       display: flex;
       justify-content: space-between;
@@ -248,6 +256,13 @@ export default {
       padding: 5px;
       color: #434649;
       margin-bottom: 5px;
+      &:last-child {
+        margin-bottom: 0;
+      }
+
+      &:hover {
+        background: #e6e6e6;
+      }
 
       .file-name {
         flex-basis: 40%;

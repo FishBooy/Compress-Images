@@ -8,7 +8,7 @@ import sharpImage from './compress/sharp';
 import zipFiles from './compress/archiver';
 import { getPathFromRoot, getReqIp, checkDir, deleteSomeSubdir } from './utils';
 
-const PORT = process.env.PORT || 8080;
+const PORT = process.argv.pop().split('=')[1] || 8080;
 const uploadTargetPath = getPathFromRoot('uploads');
 const minifyTargetPath = getPathFromRoot('minified');
 const zipsPath = getPathFromRoot('zips');

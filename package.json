@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "start": "rimraf uploads/* & rimraf minified/* & npm run build:dev & node start.js",
+    "start": "rimraf uploads/* & rimraf minified/* & npm run build:prod & node start.js",
     "start:front": "webpack-dev-server --open --config webpack.dev.js",
     "build:dev": "webpack --config webpack.dev.js",
     "build:prod": "webpack --config webpack.prod.js",
