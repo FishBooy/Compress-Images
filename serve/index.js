@@ -48,7 +48,10 @@ app.post('/minify', upload.single('file'), async (req, rsp) => {
     await checkDir(miniIpPath);
 
     // 以uploads/IP为源目录进行压缩，并保存压缩后的图片至minified/IP目录下
-    const sharpResult = await sharpImage(renamePath, miniIpPath, originalname);
+    const fileType = file.mimetype.split('/')[1];
+    const defaultQuality = { png: 60, jpeg: 70, gif: 80 };
+    const quality = parseInt(req.body.quality) || defaultQuality[fileType];
+    const sharpResult = await sharpImage(renamePath, miniIpPath, originalname, quality);
     const { size } = sharpResult;
     if (size) {
         // 压缩且保存成功后，删除uploads中对应的源文件，并返回压缩后的尺寸信息

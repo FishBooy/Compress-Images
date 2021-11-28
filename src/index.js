@@ -1,5 +1,5 @@
 import Vue from 'vue';
-import { Button, Form, Field, Uploader, Dialog, Toast, Loading, Tag } from 'vant';
+import { Button, Form, Field, Uploader, Dialog, Toast, Loading, Tag, Icon, Stepper } from 'vant';
 import App from './partials/App.vue';
 import config from './config/index';
 
@@ -11,6 +11,8 @@ import 'vant/lib/dialog/style';
 import 'vant/lib/toast/style';
 import 'vant/lib/loading/style';
 import 'vant/lib/tag/style';
+import 'vant/lib/stepper/style';
+// import 'vant/lib/icon/style';
 
 Vue.use(Button);
 Vue.use(Form);
@@ -20,6 +22,8 @@ Vue.use(Dialog);
 Vue.use(Toast);
 Vue.use(Loading);
 Vue.use(Tag);
+Vue.use(Icon);
+Vue.use(Stepper);
 
 Vue.use(config);
 

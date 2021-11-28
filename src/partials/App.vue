@@ -1,5 +1,6 @@
 <template>
   <div class="container">
+    <!--图片上传表单-->
     <div class="upload">
       <h1>Drop your PNG/JPG/JPEG files here!</h1>
       <van-uploader
@@ -12,8 +13,22 @@
           >上传文件</van-button
         >
       </van-uploader>
+      <div class="setting-trigger" @click="toggleSettingForm">
+        <van-icon
+          name="setting-o"
+          size="20"
+          color="#62666b"
+          :class="`trigger-icon ${className}`"
+          @mouseover="toogleClass"
+          @mouseleave="toogleClass"
+        />
+      </div>
     </div>
 
+    <!--压缩参数设置--->
+    <Setting ref="setting" />
+
+    <!--压缩图片列表-->
     <div class="list" ref="list">
       <ul v-if="filesList.length">
         <li v-for="(item, index) in filesList" :key="index">
@@ -53,6 +68,7 @@
       </ul>
     </div>
 
+    <!--压缩信息合计-->
     <div class="total" v-if="showDownloadAll && filesList.length > 1">
       <div>
         共压缩{{ filesList.length }}张图片，节省了<span class="total-save"
@@ -65,7 +81,12 @@
 </template>
 
 <script>
+import Setting from "./Setting.vue";
+
 export default {
+  components: {
+    Setting,
+  },
   data() {
     return {
       filesList: [], // 当前已在本地form读取成功(准备上传压缩)的图片集合
@@ -74,6 +95,7 @@ export default {
       totalSaveSize: null,
       totalSavePercent: null,
       disabled: true,
+      className: "",
     };
   },
   mounted() {
@@ -88,6 +110,9 @@ export default {
       });
   },
   methods: {
+    toogleClass() {
+      this.className = this.className ? "" : "transform";
+    },
     // 选取图片后进行格式校验
     beforeRead(files) {
       const allowedTypes = ["jpeg", "jpg", "png"].map(
@@ -122,7 +147,11 @@ export default {
       this.showDownloadAll = false;
       filesListAfterRead.forEach((file) => {
         const formData = new FormData();
+        const fileType = file.type.split("/")[1];
+        const quality = this.$refs.setting.getQuality(fileType);
+
         formData.append("file", file);
+        formData.append("quality", quality);
 
         this.$request
           .post("/minify", formData, {
@@ -209,6 +238,10 @@ export default {
       const percentInt = (minSize / originalSize).toFixed(2) * 100;
       return `${(100 - percentInt) * -1}%`;
     },
+    // 显示压缩参数配置表单
+    toggleSettingForm() {
+      this.$refs.setting.toggle();
+    },
   },
 };
 </script>
@@ -227,7 +260,7 @@ export default {
     display: none;
   }
   .upload {
-    padding: 20px;
+    padding: 10px;
     display: flex;
     flex-direction: column;
     justify-content: center;
@@ -236,9 +269,23 @@ export default {
     border: #3087df 2px dashed;
     border-radius: 5px;
     margin-bottom: 15px;
+    position: relative;
+    .setting-trigger {
+      position: absolute;
+      right: 10px;
+      bottom: 7px;
+      cursor: pointer;
+    }
     h1 {
       color: #62666b;
       font-size: 22px;
+    }
+    .trigger-icon {
+      transform: rotate(0);
+      transition: transform 0.2s ease-in-out;
+    }
+    .transform {
+      transform: rotate(180deg);
     }
   }
   .list {
@@ -261,7 +308,8 @@ export default {
       }
 
       &:hover {
-        background: #e6e6e6;
+        background: #eef6ff;
+        border: #d5e4f5 1px solid;
       }
 
       .file-name {
