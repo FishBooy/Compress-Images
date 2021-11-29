@@ -114,7 +114,7 @@ export default {
     },
     // 选取图片后进行格式校验
     beforeRead(files) {
-      const allowedTypes = ["jpeg", "jpg", "png", "gif"].map(
+      const allowedTypes = ["jpeg", "jpg", "png"].map(
         (type) => `image/${type}`
       );
       const filesList = Array.isArray(files) ? files : [files];

@@ -94,7 +94,7 @@ export default {
   name: "Setting",
   data() {
     return {
-      className: "visible",
+      className: "",
       // PNG setting
       qualityForPng: 80,
       compressLevelForPng: 6,
