@@ -2,7 +2,7 @@ import path from 'path';
 import { promises as fs } from 'fs';
 const sharp = require('sharp');
 
-export default async function sharpImage(imagePath, destPath, destName, quality) {
+export default async function sharpImage(imagePath, destPath, destName, options) {
     try {
         const fileName = imagePath.split(path.sep).pop();
         const extention = fileName.split('.').pop();
@@ -16,12 +16,17 @@ export default async function sharpImage(imagePath, destPath, destName, quality)
         let sharpRsp = null;
         if (extention === 'png') {
             sharpRsp = await sharp(imagePath)
-                .png({ palette: true, quality })
+                .png({ palette: true, ...options })
                 .toFile(fullDestPath);
         }
         if (extention === 'jpg' || extention === 'jpeg') {
             sharpRsp = await sharp(imagePath)
-                .jpeg()
+                .jpeg({ quality: options.quality })
+                .toFile(fullDestPath);
+        }
+        if (extention === 'gif') {
+            sharpRsp = await sharp(imagePath)
+                .gif({ loop: options.loop })
                 .toFile(fullDestPath);
         }
 

@@ -10,14 +10,13 @@
         :disabled="disabled"
       >
         <van-button icon="add" type="info" :disabled="disabled"
-          >上传文件</van-button
+          >选择文件</van-button
         >
       </van-uploader>
       <div class="setting-trigger" @click="toggleSettingForm">
         <van-icon
           name="setting-o"
           size="20"
-          color="#62666b"
           :class="`trigger-icon ${className}`"
           @mouseover="toogleClass"
           @mouseleave="toogleClass"
@@ -115,7 +114,7 @@ export default {
     },
     // 选取图片后进行格式校验
     beforeRead(files) {
-      const allowedTypes = ["jpeg", "jpg", "png"].map(
+      const allowedTypes = ["jpeg", "jpg", "png", "gif"].map(
         (type) => `image/${type}`
       );
       const filesList = Array.isArray(files) ? files : [files];
@@ -147,11 +146,23 @@ export default {
       this.showDownloadAll = false;
       filesListAfterRead.forEach((file) => {
         const formData = new FormData();
-        const fileType = file.type.split("/")[1];
-        const quality = this.$refs.setting.getQuality(fileType);
-
         formData.append("file", file);
-        formData.append("quality", quality);
+
+        const fileType = file.type.split("/")[1];
+        if (["jpeg", "jpg", "png"].includes(fileType)) {
+          const quality = this.$refs.setting.getQuality(fileType);
+          const compressionLevel = this.$refs.setting.getLevel(fileType);
+
+          formData.append("quality", quality);
+          formData.append("compressionLevel", compressionLevel);
+        }
+
+        if (fileType === "gif") {
+          const gifSetting = this.$refs.setting.getGifSetting(fileType);
+
+          formData.append("loop", gifSetting.loop);
+          formData.append("delay", gifSetting.delay);
+        }
 
         this.$request
           .post("/minify", formData, {
@@ -268,13 +279,14 @@ export default {
     background: #eef6ff;
     border: #3087df 2px dashed;
     border-radius: 5px;
-    margin-bottom: 15px;
     position: relative;
+
     .setting-trigger {
       position: absolute;
       right: 10px;
       bottom: 7px;
       cursor: pointer;
+      color: #5184b8;
     }
     h1 {
       color: #62666b;
