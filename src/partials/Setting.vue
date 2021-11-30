@@ -5,7 +5,7 @@
         <van-tag type="primary" color="#91d77b">PNG</van-tag>
         <div class="stepper-wrapper">
           <div class="stepper-item">
-            <van-tag>质量</van-tag>
+            <van-tag>色彩质量</van-tag>
             <van-stepper
               v-model="qualityForPng"
               :button-size="btnSize"
@@ -22,7 +22,7 @@
           </div>
 
           <div class="stepper-item">
-            <van-tag>等级</van-tag>
+            <van-tag>压缩强度</van-tag>
             <van-stepper
               v-model="compressLevelForPng"
               :button-size="btnSize"
@@ -43,7 +43,7 @@
         <van-tag type="primary">JPEG</van-tag>
         <div class="stepper-wrapper">
           <div class="stepper-item">
-            <van-tag>质量</van-tag>
+            <van-tag>色彩质量</van-tag>
             <van-stepper
               v-model="qualityForJpeg"
               :button-size="btnSize"
@@ -181,6 +181,7 @@ export default {
         text-align: center;
         line-height: 52px;
         display: block;
+        z-index: 10;
       }
 
       .stepper-wrapper {
