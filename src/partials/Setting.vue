@@ -16,7 +16,7 @@
             <van-tag
               plain
               type="primary"
-              :class="qualityForPng === 80 ? 'visible' : ''"
+              :class="qualityForPng === 60 ? 'visible' : ''"
               >推荐</van-tag
             >
           </div>
@@ -96,7 +96,7 @@ export default {
     return {
       className: "",
       // PNG setting
-      qualityForPng: 80,
+      qualityForPng: 60,
       compressLevelForPng: 6,
       compressLevelForPngStep: 1,
       compressLevelForPngMin: 0,

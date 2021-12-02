@@ -303,7 +303,7 @@ export default {
   .list {
     flex-grow: 0;
     flex-shrink: 1;
-    overflow: scroll;
+    overflow-y: auto;
     li {
       display: flex;
       justify-content: space-between;

@@ -15,11 +15,16 @@ export default async function sharpImage(imagePath, destPath, destName, options)
 
         let sharpRsp = null;
         if (extention === 'png') {
+            const quality = options.quality || 60;
+            const compressionLevel = options.compressionLevel || 6;
+
             sharpRsp = await sharp(imagePath)
-                .png({ palette: true, ...options })
+                .png({ palette: true, quality, compressionLevel })
                 .toFile(fullDestPath);
         }
         if (extention === 'jpg' || extention === 'jpeg') {
+            const quality = options.quality || 60;
+
             sharpRsp = await sharp(imagePath)
                 .jpeg({ quality: options.quality })
                 .toFile(fullDestPath);
